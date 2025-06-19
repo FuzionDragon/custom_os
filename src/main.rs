@@ -1,28 +1,38 @@
 #![no_std]
 #![no_main]
 
+#![feature(custom_test_frameworks)]
+#![test_runner(kernel::test_runner)]
+#![reexport_test_harness_main = "test_main"]
+
+mod serial;
+mod vga_buffer;
+
 use core::panic::PanicInfo;
 
+#[cfg(not(test))]
 #[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
+fn panic(info: &PanicInfo) -> ! {
+  println!("{info}");
   loop {}
 }
 
-static MESSAGE: &[u8] = b"Hello World!";
+#[cfg(test)]
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+  kernel::test_panic_handler(info);
+
+  loop {}
+}
 
 #[unsafe(no_mangle)]
 pub extern "C" fn _start() -> ! {
-  // 0xb8000 happens to be the buffer location
-  // Our pointer
-  let vga_buffer = 0xb8000 as *mut u8;
+  println!("Hello World!");
+  println!("You are a nerd! {}", 1);
+  serial_println!("Serial output test");
 
-  for (i, &byte) in MESSAGE.iter().enumerate() {
-    unsafe {
-      *vga_buffer.offset(i as isize * 2) = byte;
-      // 0xb is a colour byte for light cyan
-      *vga_buffer.offset(i as isize * 2 + 1) = 0xb;
-    }
-  }
+  #[cfg(test)]
+  test_main();
   
   loop {}
 }
