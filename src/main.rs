@@ -31,8 +31,13 @@ pub extern "C" fn _start() -> ! {
   println!("You are a nerd! {}", 1);
   serial_println!("Serial output test");
 
+  kernel::init();
+  x86_64::instructions::interrupts::int3();
+
   #[cfg(test)]
   test_main();
+
+  println!("No crash happened!");
   
   loop {}
 }

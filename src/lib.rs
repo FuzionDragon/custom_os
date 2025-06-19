@@ -1,6 +1,7 @@
 #![no_std]
 #![cfg_attr(test, no_main)]
 #![feature(custom_test_frameworks)]
+#![feature(abi_x86_interrupt)]
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
@@ -15,6 +16,8 @@ pub enum QemuExitCode {
   Success = 0x10,
   Failed = 0x11,
 }
+
+pub mod interrupts;
 
 pub fn exit_qemu(exit_code: QemuExitCode) {
   use x86_64::instructions::port::Port;
@@ -64,8 +67,8 @@ fn rand_test() {
 #[cfg(test)]
 #[unsafe(no_mangle)]
 pub extern "C" fn _start() -> ! {
+  init();
   test_main();
-  
   loop {}
 }
 
@@ -73,6 +76,9 @@ pub extern "C" fn _start() -> ! {
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
   test_panic_handler(info);
-
   loop {}
+}
+
+pub fn init() {
+  interrupts::init_idt();
 }
