@@ -32,7 +32,17 @@ pub extern "C" fn _start() -> ! {
   serial_println!("Serial output test");
 
   kernel::init();
-  x86_64::instructions::interrupts::int3();
+//  x86_64::instructions::interrupts::int3();
+
+//  unsafe {
+//    *(0xdeadbeef as *mut u8) = 42;
+//  };
+
+//  fn stack_overflow() {
+//    stack_overflow(); // for each recursion, the return address is pushed
+//  }
+//
+//  stack_overflow();
 
   #[cfg(test)]
   test_main();
